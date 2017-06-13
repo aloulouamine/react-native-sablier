@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 
 const partHeight = 213;
+
 export default class sablier extends Component {
 
   constructor(props) {
@@ -28,15 +29,21 @@ export default class sablier extends Component {
       dec: new Animated.Value(0),
       increasing: new Animated.Value(partHeight),
       modalVisible: false,
-      timeUnit: 'min',
-      timeout: 1
+      timeUnit: 'ms',
+      timeout: 1000
     }
+
+    this.duration = this._toMs(this.state.timeout, this.state.timeUnit);
     this.annimations = undefined;
   }
 
-
-  componentWillUpdate() {
-    console.log('it will update');
+  _toMs(duration, unit) {
+    if (unit === 'min') {
+      return duration * 1000 * 60;
+    } else if (unit === 's') {
+      return duration * 1000;
+    }
+    return duration;
   }
 
 
@@ -47,27 +54,28 @@ export default class sablier extends Component {
   }
 
   _handleStart() {
+    console.log('duration :', this.duration);
     this.annimations = [
       Animated.timing(                  // Animate over time
         this.state.dec,            // The animated value to drive
         {
           toValue: partHeight,                   // Animate to opacity: 1 (opaque)
-          duration: this.state.timeout,              // Make it take a while
+          duration: this.duration,              // Make it take a while
         }
       ),
       Animated.timing(                  // Animate over time
         this.state.increasing,            // The animated value to drive
         {
           toValue: 0,                   // Animate to opacity: 1 (opaque)
-          duration: this.state.timeout,              // Make it take a while
+          duration: this.duration,              // Make it take a while
         }
       )];
     Animated.parallel(this.annimations).start();
   }
 
   _handleLoop() {
-    this.state.dec.resetAnimation();
-    this.state.increasing.resetAnimation();
+    this.state.dec.stopAnimation();
+    this.state.increasing.stopAnimation();
   }
 
   _handleSet() {
@@ -75,6 +83,7 @@ export default class sablier extends Component {
   }
 
   _closeModal() {
+    this.duration = this._toMs(this.state.timeout, this.state.timeUnit);
     this.setState({ modalVisible: false });
   }
 

@@ -19,6 +19,8 @@ import {
   Picker
 } from 'react-native';
 
+import Sound from 'react-native-sound';
+
 const partHeight = 213;
 
 export default class sablier extends Component {
@@ -36,6 +38,16 @@ export default class sablier extends Component {
     this.duration = this._toMs(this.state.timeout, this.state.timeUnit);
     this.fixDuration = this.duration;
     this.annimations = undefined;
+
+
+    this.sound = new Sound('gameover.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+      // loaded successfully
+      console.log('duration in seconds: ' + this.sound.getDuration() + 'number of channels: ' + this.sound.getNumberOfChannels());
+    });
   }
 
   _toMs(duration, unit) {
@@ -64,6 +76,7 @@ export default class sablier extends Component {
 
   }
   _play() {
+
     console.log('duration :', this.duration);
     this.annimations = [
       Animated.timing(                  // Animate over time
@@ -80,7 +93,11 @@ export default class sablier extends Component {
           duration: this.duration,              // Make it take a while
         }
       )];
-    Animated.parallel(this.annimations).start();
+    Animated.parallel(this.annimations).start((state) => {
+      if (state.finished === true) {
+        this.sound.play();
+      }
+    });
   }
 
   _handleLoop() {

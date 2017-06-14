@@ -34,6 +34,7 @@ export default class sablier extends Component {
     }
 
     this.duration = this._toMs(this.state.timeout, this.state.timeUnit);
+    this.fixDuration = this.duration;
     this.annimations = undefined;
   }
 
@@ -54,6 +55,15 @@ export default class sablier extends Component {
   }
 
   _handleStart() {
+    this.setState({
+      dec: new Animated.Value(0),
+      increasing: new Animated.Value(partHeight),
+    }, () => {
+      this._play();
+    });
+
+  }
+  _play() {
     console.log('duration :', this.duration);
     this.annimations = [
       Animated.timing(                  // Animate over time
@@ -74,8 +84,15 @@ export default class sablier extends Component {
   }
 
   _handleLoop() {
-    this.state.dec.stopAnimation();
-    this.state.increasing.stopAnimation();
+
+    this.state.dec.stopAnimation((a) => {
+      this.state.increasing.stopAnimation((b) => {
+        console.log('ratio', b / partHeight);
+        this.duration = this.fixDuration - parseInt(this.duration * (b / partHeight));
+        console.log(this.duration);
+        this.setState({ increasing: new Animated.Value(a), dec: new Animated.Value(b) }, () => { this._play(); });
+      });
+    });
   }
 
   _handleSet() {
@@ -84,6 +101,7 @@ export default class sablier extends Component {
 
   _closeModal() {
     this.duration = this._toMs(this.state.timeout, this.state.timeUnit);
+    this.fixDuration = this.duration;
     this.setState({ modalVisible: false });
   }
 
